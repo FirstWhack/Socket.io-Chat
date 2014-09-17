@@ -32,7 +32,7 @@ ul {
 }
 
 /* Sorta like dot leaders but a line is fine */
-li.message:after {
+/*li.message:after {
   content: "";
   background: black;
   position: absolute;
@@ -40,7 +40,7 @@ li.message:after {
   height: 1px;
   width: 50%;
   margin-top: 30px;
-}
+}*/
 
 span.timestamp {
   float: right;

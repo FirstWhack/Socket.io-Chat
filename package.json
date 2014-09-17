@@ -2,6 +2,7 @@
   "name": "Chat",
   "version": "0.0.1",
   "dependencies": {
+    "couchbase": "^2.0.0-dp1",
     "express": "^4.9.1",
     "socket.io": "^1.1.0"
   }

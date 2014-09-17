@@ -282,4 +282,11 @@ $(function() {
   socket.on('stop typing', function (data) {
     removeChatTyping(data);
   });
+
+    // Whenever the server emits 'stop typing', kill the typing message
+  socket.on('message history', function (data) {
+    for (var i in data) {
+      if (!data[i].error) addChatMessage(JSON.parse(data[i].value));
+    }
+  });
 }); 
