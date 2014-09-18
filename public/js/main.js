@@ -1,7 +1,8 @@
 $(function() {
   var FADE_TIME = 150; // ms
   var TYPING_TIMER_LENGTH = 400; // ms
-  var COLORS = [
+  var COLORS = [ // Yeah you guessed it this color fucker isn't mine
+    // I'll remove this and add gravatar 
     '#e21400', '#91580f', '#f8a700', '#f78b00',
     '#58dc00', '#287b00', '#a8f07a', '#4ae8c4',
     '#3b88eb', '#3824aa', '#a700ff', '#d300e7'
@@ -25,7 +26,7 @@ $(function() {
 
   var socket = io();
 
-  function addParticipantsMessage (data) {
+  function addParticipantsMessage(data) {
     var message = '';
     if (data.numUsers === 1) {
       message += "there's 1 participant";
@@ -36,7 +37,7 @@ $(function() {
   }
 
   // Sets the client's username
-  function setUsername () {
+  function setUsername() {
     username = cleanInput($usernameInput.val().trim());
 
     // If the username is valid
@@ -52,7 +53,7 @@ $(function() {
   }
 
   // Sends a chat message
-  function sendMessage () {
+  function sendMessage() {
     var message = $inputMessage.val();
     // Prevent markup from being injected into the message
     message = cleanInput(message);
@@ -70,8 +71,9 @@ $(function() {
   }
 
   // Log a message
-  function log (message, options) {
-    var classers = ['log'], $el = $('<li>');
+  function log(message, options) {
+    var classers = ['log'],
+      $el = $('<li>');
     if (message.message) {
       $el.addClass('typing');
       $el.data('username', message.username);
@@ -82,7 +84,7 @@ $(function() {
   }
 
   // Adds the visual chat message to the message list
-  function addChatMessage (data, options) {
+  function addChatMessage(data, options) {
     // Don't fade the message in if there is an 'X was typing'
     var $typingMessages = getTypingMessages(data);
     options = options || {};
@@ -105,12 +107,12 @@ $(function() {
       .addClass(typingClass)
       .append($usernameDiv, $messageBodyDiv)
       .append($timestampDiv, $messageBodyDiv);
-    
+
     addMessageElement($messageDiv, options);
   }
 
   // Adds the visual chat typing message
-  function addChatTyping (data) {
+  function addChatTyping(data) {
     data.typing = true;
     data.message = data.username + ' is typing';
     data.timestamp = '';
@@ -118,8 +120,8 @@ $(function() {
   }
 
   // Removes the visual chat typing message
-  function removeChatTyping (data) {
-    getTypingMessages(data).fadeOut(function () {
+  function removeChatTyping(data) {
+    getTypingMessages(data).fadeOut(function() {
       $(this).remove();
     });
   }
@@ -129,7 +131,7 @@ $(function() {
   // options.fade - If the element should fade-in (default = true)
   // options.prepend - If the element should prepend
   //   all other messages (default = false)
-  function addMessageElement (el, options) {
+  function addMessageElement(el, options) {
     var $el = $(el);
 
     // Setup default options
@@ -156,20 +158,20 @@ $(function() {
   }
 
   // Prevents input from having injected markup
-  function cleanInput (input) {
+  function cleanInput(input) {
     return $('<div/>').text(input).text();
   }
-  
+
   function formatDate(dateObj) {
     var d = new Date(dateObj);
     var hours = d.getHours();
     var minutes = d.getMinutes().toString();
 
-    return hours + ":" + (minutes.length === 1 ? '0'+minutes : minutes);
+    return hours + ":" + (minutes.length === 1 ? '0' + minutes : minutes);
   }
 
-  // Updates the typing event
-  function updateTyping () {
+  // I stole the typing stuff too... But being good at copy/paste is kinda like being a good developer? ;)
+  function updateTyping() {
     if (connected) {
       if (!typing) {
         typing = true;
@@ -177,7 +179,7 @@ $(function() {
       }
       lastTypingTime = (new Date()).getTime();
 
-      setTimeout(function () {
+      setTimeout(function() {
         var typingTimer = (new Date()).getTime();
         var timeDiff = typingTimer - lastTypingTime;
         if (timeDiff >= TYPING_TIMER_LENGTH && typing) {
@@ -189,33 +191,36 @@ $(function() {
   }
 
   // Gets the 'X is typing' messages of a user
-  function getTypingMessages (data) {
-    return $('.typing.log').filter(function (i) {
+  function getTypingMessages(data) {
+    return $('.typing.log').filter(function(i) {
       return $(this).data('username') === data.username;
     });
   }
 
-  // Gets the color of a username through our hash function
-  function getUsernameColor (username) {
-    // Compute hash code
-    var hash = 7;
-    for (var i = 0; i < username.length; i++) {
-       hash = username.charCodeAt(i) + (hash << 5) - hash;
-    }
-    // Calculate color
-    var index = Math.abs(hash % COLORS.length);
-    return COLORS[index];
-  }
+
+
+  // Yeah you guessed it this color fucker isn't mine
+  // I'll remove this and add gravatar 
+  function getUsernameColor(username) {
+      // Compute hash code
+      var hash = 7;
+      for (var i = 0; i < username.length; i++) {
+        hash = username.charCodeAt(i) + (hash << 5) - hash;
+      }
+      // Calculate color
+      var index = Math.abs(hash % COLORS.length);
+      return COLORS[index];
+    } // I seriously hate this btw
+
 
   // Keyboard events
-
-  $window.keydown(function (event) {
+  $window.keydown(function(event) {
     // Auto-focus the current input when a key is typed
     if (!(event.ctrlKey || event.metaKey || event.altKey)) {
       $currentInput.focus();
     }
-    // When the client hits ENTER on their keyboard
-    if (event.which === 13) {
+
+    if (event.which === 13) { // 13 === enter
       if (username) {
         sendMessage();
         socket.emit('stop typing');
@@ -233,19 +238,19 @@ $(function() {
   // Click events
 
   // Focus input when clicking anywhere on login page
-  $loginPage.click(function () {
+  $loginPage.click(function() {
     $currentInput.focus();
   });
 
   // Focus input when clicking on the message input's border
-  $inputMessage.click(function () {
+  $inputMessage.click(function() {
     $inputMessage.focus();
   });
 
   // Socket events
 
   // Whenever the server emits 'login', log the login message
-  socket.on('login', function (data) {
+  socket.on('login', function(data) {
     connected = true;
     // Display the welcome message
     var message = "Welcome to Socket.IO Chat";
@@ -256,7 +261,7 @@ $(function() {
     var history = data.history;
     if (history) { // we were sent an object of {'msg:0': msgObj, 'msg:2': msgObj, ... }
       for (var i in history) {
-        if (!history[i].error) addChatMessage(JSON.parse(history[i].value)); 
+        if (!history[i].error) addChatMessage(JSON.parse(history[i].value));
         // if there's an error.. Eh maybe there was just a bad key
         // these things happen but we'll just ignore it now
       }
@@ -264,31 +269,31 @@ $(function() {
   });
 
   // Whenever the server emits 'new message', update the chat body
-  socket.on('new message', function (data) {
+  socket.on('new message', function(data) {
     addChatMessage(data);
   });
 
   // Whenever the server emits 'user joined', log it in the chat body
-  socket.on('user joined', function (data) {
+  socket.on('user joined', function(data) {
     log(data.username + ' joined');
     addParticipantsMessage(data);
   });
 
   // Whenever the server emits 'user left', log it in the chat body
-  socket.on('user left', function (data) {
+  socket.on('user left', function(data) {
     log(data.username + ' left');
     addParticipantsMessage(data);
     removeChatTyping(data);
   });
 
   // Whenever the server emits 'typing', show the typing message
-  socket.on('typing', function (data) {
+  socket.on('typing', function(data) {
     addChatTyping(data);
   });
 
   // Whenever the server emits 'stop typing', kill the typing message
-  socket.on('stop typing', function (data) {
+  socket.on('stop typing', function(data) {
     removeChatTyping(data);
   });
 
-}); 
+});
