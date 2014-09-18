@@ -64,7 +64,7 @@ span.timestamp {
 /* Login Page */
 
 .login.page {
-  background-color: #000;
+  background: linear-gradient(25deg, grey, black);
 }
 
 .login.page .form {
@@ -101,11 +101,6 @@ span.timestamp {
   font-weight: 100;
 }
 
-/* Chat page */
-
-.chat.page {
-  display: none;
-}
 
 /* Font */
 
