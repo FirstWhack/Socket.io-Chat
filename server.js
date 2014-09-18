@@ -72,22 +72,23 @@ function Start() {
 				usernames[username] = username;
 				++numUsers;
 				addedUser = true;
-				socket.emit('login', {
-					numUsers: numUsers
-				});
+
 
 				var oldMessages, msgKeys = [];
 				bucket.get('msg_count', function(err, result) {
 					oldMessages = result.value
-					oldMessages = (oldMessages > 100 ? 100 : oldMessages);
-					console.log('There are ' + result + ' messages | Sending ' + oldMessages + ' to client');
+					oldMessages = (oldMessages > 100 ? 100 : oldMessages); // We're only doing history of 100 for now..
+					console.log('There are ' + result.value + ' messages | Sending ' + oldMessages + ' to client');
 
 					for (var i = 0; i < oldMessages+1; i++) {
 						msgKeys.push('msg:'+i);
 					}
 					console.log(msgKeys);
 					bucket.getMulti(msgKeys, null, function(err, result) {
-						socket.emit('message history', result);
+						socket.emit('login', {
+							numUsers: numUsers,
+							history: result
+						});
 					});
 				});
 

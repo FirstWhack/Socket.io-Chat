@@ -248,11 +248,19 @@ $(function() {
   socket.on('login', function (data) {
     connected = true;
     // Display the welcome message
-    var message = "Welcome to Socket.IO Chat – ";
+    var message = "Welcome to Socket.IO Chat";
     log(message, {
       prepend: true
     });
     addParticipantsMessage(data);
+    var history = data.history;
+    if (history) { // we were sent an object of {'msg:0': msgObj, 'msg:2': msgObj, ... }
+      for (var i in history) {
+        if (!history[i].error) addChatMessage(JSON.parse(history[i].value)); 
+        // if there's an error.. Eh maybe there was just a bad key
+        // these things happen but we'll just ignore it now
+      }
+    }
   });
 
   // Whenever the server emits 'new message', update the chat body
@@ -283,10 +291,4 @@ $(function() {
     removeChatTyping(data);
   });
 
-    // Whenever the server emits 'stop typing', kill the typing message
-  socket.on('message history', function (data) {
-    for (var i in data) {
-      if (!data[i].error) addChatMessage(JSON.parse(data[i].value));
-    }
-  });
 }); 
