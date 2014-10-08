@@ -1,0 +1,6 @@
+# I don't want them in there
+node_modules/
+
+# ignore logs
+*.log
+*.logs

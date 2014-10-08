@@ -1,29 +1,35 @@
-function Start() {
-	var express = require('express');
-	var app = express();
-
-	var server = require('http').Server(app);
-
-
-	var io = require('socket.io')(server);
-	var port = process.env.PORT || 80;
-
-	var couchbase = require('couchbase');
-
-	server.listen(port, function() {
-		console.log('Updated : Server listening at port %d', port);
-	});
+var express 	= require('express');
+var app 		= express();
+var couchbase 	= require('couchbase');
+var server 		= require('http').Server(app);
+var io 			= require('socket.io')(server);
+var port 		= process.env.PORT || 80;
 
 
+exports.connectCouch = function (cb, bucketName, port) {
 	var bucket = new couchbase.Connection({
-		'bucket': 'default',
-		'host': 'localhost:8091'
+		'bucket': bucketName || 'default',
+		'host': 'localhost:' + port || '8091' // couchbase default port is 8091
 	}, function(err) {
-		if (err) {
-			// Failed to make a connection to the Couchbase cluster.
+		if (err) { // Failed to make a connection to the Couchbase cluster.
 			console.log('error');
 			throw err;
+		} else { // Success! 
+			console.log('Connected to couchbase');
+			cb(bucket);
 		}
+	});
+	return bucket;
+}
+
+exports.initialize = function (bucket) { // start 
+
+	// usernames which are currently connected to the chat
+	var usernames = {};
+	var numUsers = 0;
+
+	server.listen(port, function() {
+		console.log('Server listening at port %d', port);
 
 		// Routing
 		app.use('/js', express.static(__dirname + '/public/js'));
@@ -32,11 +38,6 @@ function Start() {
 
 
 		// Chatroom
-
-		// usernames which are currently connected to the chat
-		var usernames = {};
-		var numUsers = 0;
-
 		io.on('connection', function(socket) {
 			var addedUser = false;
 
@@ -58,10 +59,12 @@ function Start() {
 					var messageKey = "msg:" + result.value;
 					messageObj.id = result;
 
-					bucket.set(messageKey, JSON.stringify(messageObj), function(err) {});
-
+					// Store the messageObj using msg:nth as the key
+					bucket.set(messageKey, JSON.stringify(messageObj), function(err) {}); 
 					console.log('set: ' + messageKey + ' content: ' + JSON.stringify(messageObj));
-					socket.broadcast.emit('new message', messageObj); // done
+
+					// Send the messageObj to the client
+					socket.broadcast.emit('new message', messageObj);
 				});
 
 
@@ -76,18 +79,21 @@ function Start() {
 				++numUsers;
 				addedUser = true;
 
+				//
+				var oldMessageCount, msgKeys = [];
 
-				var oldMessages, msgKeys = [];
+
 				bucket.get('msg_count', function(err, result) {
-					oldMessages = result.value
-					oldMessages = (oldMessages > 100 ? 100 : oldMessages); // We're only doing history of 100 for now..
-					console.log('There are ' + result.value + ' messages | Sending ' + oldMessages + ' to client');
+					oldMessageCount = result.value;
+					oldMessageCount = (oldMessageCount > 100 ? 100 : oldMessageCount); // We're only doing history of 100 for now..
+					console.log('There are ' + result.value + ' messages | Sending ' + oldMessageCount + ' to client'); // well actually the count is 1 short but since it's just a log that's fine 
 
-					for (var i = 0; i < oldMessages + 1; i++) {
+					for (var i = 0; i < oldMessageCount + 1; i++) { // make an array of keys
 						msgKeys.push('msg:' + i);
 					}
 					console.log(msgKeys);
-					bucket.getMulti(msgKeys, null, function(err, result) {
+
+					bucket.getMulti(msgKeys, null, function(err, result) { // use the array of keys to fetch the old messages
 						socket.emit('login', {
 							numUsers: numUsers,
 							history: result
@@ -133,16 +139,5 @@ function Start() {
 				}
 			});
 		});
-	})
-};
-
-function formatDate(dateObj) {
-	var d = new Date(dateObj);
-	var hours = d.getHours();
-	var minutes = d.getMinutes().toString();
-
-	return hours + ":" + (minutes.length === 1 ? '0' + minutes : minutes);
+	});
 }
-
-
-exports.Start = Start;

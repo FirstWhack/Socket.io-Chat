@@ -1,3 +1,7 @@
-var server = require('./server');
+var chatServer 	= require('./server');
 
-server.Start();
+chatServer.connectCouch( function (bucket) {
+	chatServer.initialize(bucket);
+});
+
+
