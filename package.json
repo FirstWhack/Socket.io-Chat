@@ -1,9 +1,25 @@
 {
-  "name": "Chat",
-  "version": "0.0.1",
+  "name": "Socket.io-Chat",
+  "version": "0.0.2",
   "dependencies": {
-    "couchbase": "^2.0.0-dp1",
+    "couchbase": "2.0.0-dp1",
     "express": "^4.9.1",
     "socket.io": "^1.1.0"
-  }
+  },
+  "scripts": {
+    "start": "node server.js"
+  },
+  "description": "Socket.io-Chat ==============",
+  "main": "index.js",
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jhawins/Socket.io-Chat.git"
+  },
+  "author": "jhawins",
+  "license": "WTFPL",
+  "bugs": {
+    "url": "https://github.com/jhawins/Socket.io-Chat/issues"
+  },
+  "homepage": "http://souster.tk"
 }
